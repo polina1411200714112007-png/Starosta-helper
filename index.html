@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Сайт старосты</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #FFECD7;
+      color: #2d2a3e;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #FF8800;
+    }
+
+    nav button, .недели button {
+      background-color: #FF8266;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    nav button:hover, .недели button:hover {
+      background-color: #E86A4F;
+    }
+
+    .недели button.активна {
+      background-color: #FF8800;
+      box-shadow: 0 0 0 3px #FFD199;
+    }
+
+    section {
+      background-color: white;
+      padding: 15px 20px;
+      margin-top: 20px;
+      border-radius: 12px;
+    }
+
+    .прокрутка {
+      overflow-x: auto;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background-color: white;
+    }
+
+    th, td {
+      border: 1px solid #f0d2b0;
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
+      vertical-align: top;
+      min-width: 130px;
+    }
+
+    th {
+      background-color: #FFB45E;
+    }
+
+    td.день {
+      font-weight: bold;
+      background-color: #FFF3E6;
+      min-width: 100px;
+    }
+
+    tr.сегодня td.день {
+      background-color: #FF8800;
+      color: white;
+    }
+
+    .тип, .доп {
+      display:block;
+      font-size: 12px;
+      color: #7a6a5a;
+    }
+
+  .dz-form input, .dz-form select {
+      padding: 8px;
+      margin: 0 6px 8px 0;
+      border: 1px solid #f0d2b0;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    .dz-form button {
+      background-color: #FF8266;
+      color: white;
+      border: none;
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    #dz-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    #dz-list li {
+      background-color: #FFF3E6;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+    }
+
+    #dz-list li.done span {
+      text-decoration: line-through;
+      color: #999;
+    }
+
+    #dz-list li input {
+      margin-right: 10px;
+    }
+
+    #dz-list li button {
+      float: right;
+      background-color: #E86A4F;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+.dz-form select {
+      padding: 8px;
+      margin: 0 6px 8px 0;
+      border: 1px solid #f0d2b0;
+      border-radius: 8px;
+      font-size: 15px;
+      background-color: white;
+      color: #2d2a3e;
+    }
+.att-form input {
+      padding: 8px;
+      margin: 0 6px 8px 0;
+      border: 1px solid #f0d2b0;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    .att-form button {
+      background-color: #FF8266;
+      color: white;
+      border: none;
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .att-hint {
+      font-size: 13px;
+      color: #7a6a5a;
+    }
+
+    .att-scroll {
+      overflow-x: auto;
+    }
+
+    #att-table td, #att-table th {
+      min-width: 60px;
+      padding: 6px;
+      font-size: 13px;
+    }
+
+    #att-table td.name {
+      text-align: left;
+      min-width: 130px;
+      font-weight: bold;
+      background-color: #FFF3E6;
+    }
+
+    #att-table td.mark {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #att-table td.present {
+      background-color: #CDEFCB;
+    }
+
+    #att-table td.absent {
+      background-color: #F6C6C0;
+    }
+
+    #att-table td.sick {
+      background-color: #FFE7A3;
+    }
+.att-month {
+      margin: 10px 0;
+    }
+
+    .att-month button {
+      background-color: #FF8800;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #att-month-label {
+      display: inline-block;
+      min-width: 150px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .del-date {
+      display: block;
+      margin: 4px auto 0 auto;
+      background-color: #E86A4F;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+</style>
+</head>
+
+<body>
+
+  <h1>Группа Жбо-ТЖ/26.2: помощник старосты</h1>
+
+  <nav>
+    <button onclick="показать('raspisanie')">Расписание</button>
+    <button onclick="показать('dz')">Домашние задания</button>
+    <button onclick="показать('poseshaemost')">Посещаемость</button>
+  </nav>
+
+  <section id="raspisanie">
+    <h2>Расписание</h2>
+
+    <div class="недели">
+      <button id="кнопка1" onclick="выбратьНеделю(1)">I неделя</button>
+      <button id="кнопка2" onclick="выбратьНеделю(2)">II неделя</button>
+    </div>
+
+    <div class="прокрутка">
+      <table>
+        <thead>
+          <tr>
+            <th>День</th>
+            <th>1 пара
+08:30–10:00</th>
+            <th>2 пара
+10:10–11:40</th>
+            <th>3 пара
+11:50–13:20</th>
+            <th>4 пара
+13:50–15:20</th>
+            <th>5 пара
+15:30–17:00</th>
+          </tr>
+        </thead>
+        <tbody id="тело"></tbody>
+      </table>
+    </div>
+  </section>
+    
+<section id="dz" style="display:none">
+    <h2>Домашние задания</h2>
+
+    <div class="dz-form">
+      <select id="dz-subject">
+        <option value="">Выбери предмет</option>
+        <option>Введение в журналистику</option>
+        <option>Основы теории литературы</option>
+        <option>История зарубежной литературы</option>
+        <option>История русской литературы</option>
+        <option>Современный русский язык</option>
+        <option>Иностранный язык</option>
+        <option>Основы российской государственности</option>
+        <option>Духовно-нравственная культура народов РФ</option>
+        <option>Шейпинг</option>
+      </select>
+      <input id="dz-task" type="text" placeholder="Задание">
+      <input id="dz-date" type="date">
+      <button onclick="addHomework()">Добавить</button>
+    </div>
+
+    <ul id="dz-list"></ul>
+  </section>
+  <section id="poseshaemost" style="display:none">
+  <h2>Посещаемость</h2>
+
+  <div class="att-form">
+    <input id="att-date" type="date">
+    <button onclick="addDate()">Добавить дату</button>
+  </div>
+
+<div class="att-month">
+    <button onclick="changeMonth(-1)">←</button>
+    <span id="att-month-label"></span>
+    <button onclick="changeMonth(1)">→</button>
+  </div>
+  <p class="att-hint">Нажимай на ячейку: пусто → был → не был → болеет.</p>
+
+  <div class="att-scroll">
+    <table id="att-table"></table>
+  </div>
+  </section>
+
+  <script>
+    // ---------- Переключение вкладок ----------
+    function показать(имя) {
+      let блоки = ["raspisanie", "dz", "poseshaemost"];
+
+      for (let i = 0; i < блоки.length; i++) {
+        document.getElementById(блоки[i]).style.display = "none";
+      }
+
+      document.getElementById(имя).style.display = "block";
+    }
+
+    // ---------- Данные расписания ----------
+    // п(...) создаёт одну пару. Пустая пара записывается как null.
+    function п(название, тип, преподаватель, аудитория) {
+      return { название, тип, преподаватель, аудитория };
+    }
+
+    const дни = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
+
+    // В каждом дне 5 пар (с 1 по 5)
+    const расписание = {
+      1: {
+        "Понедельник": [
+          null,
+          null,
+          п("Введение в журналистику", "Лекция", "Галкина Ю.В.", "ауд. 101"),
+          п("Введение в журналистику", "Лекция", "Галкина Ю.В.", "ауд. 101"),
+          п("Введение в журналистику", "Практическое занятие", "Галкина Ю.В.", "ауд. 101")
+        ],
+        "Вторник": [
+          null,
+          п("Основы теории литературы", "Лекция", "Кихней Л.Г.", "ауд. 314"),
+          п("Основы теории литературы", "Практическое занятие", "", "ауд. 112"),
+          null,
+          null
+        ],
+        "Среда": [
+          null,
+          п("История зарубежной литературы", "Лекция", "Занегина А.А.", "ауд. 201"),
+          п("Современный русский язык", "Лекция", "Шуйская Ю.В.", "ауд. 314"),
+          п("Духовно-нравственная культура народов РФ", "Лекция", "Чайко И.В.", "ауд. 223"),
+          п("Духовно-нравственная культура народов РФ", "Практическое занятие", "Чайко И.В.", "ауд. 223")
+        ],
+        "Четверг": [
+          null,
+          null,
+          п("История русской литературы", "Лекция", "Александров И.А.", "ауд. 101"),
+          п("История русской литературы", "Практическое занятие", "Александров И.А.", "ауд. 209"),
+          null
+        ],
+        "Пятница": [null, null, null, null, null],
+        "Суббота": [null, null, null, null, null]
+      },
+
+      2: {
+        "Понедельник": [
+          null,
+          п("Введение в журналистику", "Практическое занятие", "Галкина Ю.В.", "ауд. 223"),
+          п("Введение в журналистику", "Практическое занятие", "Галкина Ю.В.", "ауд. 223"),
+          null,
+          null
+        ],
+        "Вторник": [
+          п("История зарубежной литературы", "Практическое занятие", "Занегина А.А.", "ауд. 208"),
+          п("История зарубежной литературы", "Практическое занятие", "Занегина А.А.", "ауд. 208"),
+          п("Иностранный язык", "Практическое занятие", "Малышева Е.Л.", "ауд. 216"),
+          п("Иностранный язык", "Практическое занятие", "Малышева Е.Л.", "ауд. 216"),
+          null
+        ],
+        "Среда": [
+          п("Основы российской государственности", "Практическое занятие", "Артемов Г.А.", "ауд. 207"),
+          п("Современный русский язык", "Лекция", "Шуйская Ю.В.", "ауд. 314"),
+          п("Основы российской государственности", "Лекция", "Артемов Г.А.", "ауд. 207"),
+          null,
+          null
+        ],
+        "Четверг": [
+          null,
+          п("Современный русский язык", "Практическое занятие", "Шуйская Ю.В.", "ауд. 223"),
+          п("Современный русский язык", "Практическое занятие", "Шуйская Ю.В.", "ауд. 223"),
+          п("История русской литературы", "Практическое занятие", "Александров И.А.", "ауд. 209"),
+          null
+        ],
+        "Пятница": [
+          null,
+          null,
+          п("Шейпинг", "Практическое занятие", "Иванов В.Б.", "Спортзал (м. Тульская)"),
+          null,
+          null
+        ],
+        "Суббота": [null, null, null, null, null]
+      }
+    };
+
+    // ---------- Рисуем таблицу ----------
+    let текущаяНеделя = 1;
+
+    function выбратьНеделю(номер) {
+      текущаяНеделя = номер;
+      нарисовать();
+    }
+
+    function нарисовать() {
+      let названияДней = ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
+      let сегодня = названияДней[new Date().getDay()];
+      let html = "";
+
+      for (let d = 0; d < дни.length; d++) {
+        let день = дни[d];
+        let пары = расписание[текущаяНеделя][день];
+
+        if (день === сегодня) {
+          html += '<tr class="сегодня">';
+        } else {
+          html += "<tr>";
+        }
+        html += '<td class="день">' + день + "</td>";
+
+        for (let i = 0; i < пары.length; i++) {
+          let пара = пары[i];
+          if (пара === null) {
+            html += "<td></td>";
+          } else {
+            html += "<td><b>" + пара.название + "</b>";
+            html += '<span class="тип">' + пара.тип + "</span>";
+            if (пара.преподаватель !== "") {
+              html += '<span class="доп">' + пара.преподаватель + "</span>";
+            }
+            html += '<span class="доп">' + пара.аудитория + "</span></td>"
+            }
+          }
+        html += "</tr>";
+      }
+
+      document.getElementById("тело").innerHTML = html;
+
+      document.getElementById("кнопка1").className = (текущаяНеделя === 1) ? "активна" : "";
+      document.getElementById("кнопка2").className = (текущаяНеделя === 2) ? "активна" : "";
+    }
+нарисовать();
+  </script>
+
+<script>
+  var homework = [];
+
+  function saveHomework() {
+    try {
+      localStorage.setItem("homework", JSON.stringify(homework));
+    } catch (e) {}
+  }
+
+  function loadHomework() {
+    try {
+      var saved = localStorage.getItem("homework");
+      if (saved) {
+        homework = JSON.parse(saved);
+      }
+    } catch (e) {
+      homework = [];
+    }
+  }
+
+  function formatDate(d) {
+    if (d === "") {
+      return "";
+    }
+    var parts = d.split("-");
+    return parts[2] + "." + parts[1] + "." + parts[0];
+  }
+
+  function addHomework() {
+    var subject = document.getElementById("dz-subject").value.trim();
+    var task = document.getElementById("dz-task").value.trim();
+    var date = document.getElementById("dz-date").value;
+
+    if (subject === "" || task === "") {
+      alert("Впиши предмет и задание");
+      return;
+    }
+
+    homework.push({ subject: subject, task: task, date: date, done: false });
+
+    document.getElementById("dz-subject").value = "";
+    document.getElementById("dz-task").value = "";
+    document.getElementById("dz-date").value = "";
+
+    saveHomework();
+    showHomework();
+  }
+
+  function toggleHomework(i) {
+    homework[i].done = !homework[i].done;
+    saveHomework();
+    showHomework();
+  }
+
+  function deleteHomework(i) {
+    homework.splice(i, 1);
+    saveHomework();
+    showHomework();
+  }
+
+  function makeToggle(i) {
+    return function () { toggleHomework(i); };
+  }
+
+  function makeDelete(i) {
+    return function () { deleteHomework(i); };
+  }
+
+  function showHomework() {
+    var list = document.getElementById("dz-list");
+    list.innerHTML = "";
+
+    for (var i = 0; i < homework.length; i++) {
+      var item = homework[i];
+
+      var li = document.createElement("li");
+      if (item.done) {
+        li.className = "done";
+      }
+
+      var box = document.createElement("input");
+      box.type = "checkbox";
+      box.checked = item.done;
+      box.onchange = makeToggle(i);
+
+      var text = document.createElement("span");
+      var line = item.subject + ": " + item.task;
+      if (item.date !== "") {
+        line = line + " (до " + formatDate(item.date) + ")";
+      }
+      text.textContent = line;
+
+      var del = document.createElement("button");
+      del.textContent = "Удалить";
+      del.onclick = makeDelete(i);
+
+      li.appendChild(box);
+      li.appendChild(text);
+      li.appendChild(del);
+      list.appendChild(li);
+    }
+  }
+
+  loadHomework();
+  showHomework();
+</script>
+<script>
+  var students = [
+    "Алукер Е.Д.",
+    "Андреева Д.С.",
+    "Афиркина Д.В.",
+    "Ворошилова Н.",
+    "Горюнова А.А.",
+    "Зюзьков Д.М.",
+    "Индоиту А.А.",
+    "Кошелева П.",
+    "Маркин В.И.",
+    "Мартынова М.А.",
+    "Орлова Д.",
+    "Пискунова О.А.",
+    "Попов М.А.",
+    "Степанова Е.",
+    "Уткина А.М.",
+    "Черкасов И.С.",
+    "Шибаев Т.Е.",
+    "Шишлова Д.Д.",
+    "Шорин А.М."
+  ];
+
+  var attDates = [];
+  var attMarks = {};
+
+  var markNames = ["", "был", "не был", "болеет"];
+  var markClasses = ["", "present", "absent", "sick"];
+
+  var monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+
+  // Текущий показываемый месяц в виде "2026-11"
+  var now = new Date();
+  var attMonth = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
+
+  function saveAttendance() {
+    try {
+      localStorage.setItem("attDates", JSON.stringify(attDates));
+      localStorage.setItem("attMarks", JSON.stringify(attMarks));
+    } catch (e) {}
+  }
+
+  function loadAttendance() {
+    try {
+      var d = localStorage.getItem("attDates");
+      var m = localStorage.getItem("attMarks");
+      if (d) { attDates = JSON.parse(d); }
+      if (m) { attMarks = JSON.parse(m); }
+    } catch (e) {
+      attDates = [];
+      attMarks = {};
+    }
+  }
+
+  function shortDate(d) {
+    var parts = d.split("-");
+    return parts[2] + "." + parts[1];
+  }
+
+  function changeMonth(delta) {
+    var parts = attMonth.split("-");
+    var y = Number(parts[0]);
+    var m = Number(parts[1]) + delta;
+    if (m < 1) { m = 12; y = y - 1; }
+    if (m > 12) { m = 1; y = y + 1; }
+    attMonth = y + "-" + String(m).padStart(2, "0");
+    showAttendance();
+  }
+
+  function addDate() {
+    var date = document.getElementById("att-date").value;
+    if (date === "") {
+      alert("Выбери дату");
+      return;
+    }
+    for (var i = 0; i < attDates.length; i++) {
+      if (attDates[i] === date) {
+        alert("Такая дата уже есть");
+        return;
+      }
+    }
+    attDates.push(date);
+    attDates.sort();
+    attMonth = date.substring(0, 7);
+    document.getElementById("att-date").value = "";
+    saveAttendance();
+    showAttendance();
+  }
+
+  function deleteDate(date) {
+    if (!confirm("Удалить дату " + shortDate(date) + " и все отметки за этот день?")) {
+      return;
+    }
+    var newDates = [];
+    for (var i = 0; i < attDates.length; i++) {
+      if (attDates[i] !== date) {
+        newDates.push(attDates[i]);
+      }
+    }
+    attDates = newDates;
+
+    for (var key in attMarks) {
+      if (key.split("|")[1] === date) {
+        delete attMarks[key];
+      }
+    }
+
+    saveAttendance();
+    showAttendance();
+  }
+
+  function makeDeleteDate(date) {
+    return function () { deleteDate(date); };
+  }
+
+  function clickMark(s, d) {
+    var key = s + "|" + d;
+    var current = attMarks[key] || 0;
+    attMarks[key] = (current + 1) % 4;
+    saveAttendance();
+    showAttendance();
+  }
+
+  function makeMarkClick(s, d) {
+    return function () { clickMark(s, d); };
+  }
+
+  function showAttendance() {
+    // Названия месяца над таблицей
+    var mp = attMonth.split("-");
+    document.getElementById("att-month-label").textContent = monthNames[Number(mp[1]) - 1] + " " + mp[0];
+
+    // Только даты выбранного месяца
+    var visible = [];
+    for (var v = 0; v < attDates.length; v++) {
+      if (attDates[v].substring(0, 7) === attMonth) {
+        visible.push(attDates[v]);
+      }
+    }
+
+    var table = document.getElementById("att-table");
+    table.innerHTML = "";
+
+    var head = document.createElement("tr");
+    var corner = document.createElement("th");
+    corner.textContent = "Студент";
+    head.appendChild(corner);
+
+    for (var j = 0; j < visible.length; j++) {
+      var th = document.createElement("th");
+      th.appendChild(document.createTextNode(shortDate(visible[j])));
+
+      var del = document.createElement("button");
+      del.className = "del-date";
+      del.textContent = "×";
+del.onclick = makeDeleteDate(visible[j]);
+      th.appendChild(del);
+
+      head.appendChild(th);
+    }
+    table.appendChild(head);
+
+    for (var i = 0; i < students.length; i++) {
+      var row = document.createElement("tr");
+
+      var nameCell = document.createElement("td");
+      nameCell.className = "name";
+      nameCell.textContent = students[i];
+      row.appendChild(nameCell);
+
+      for (var k = 0; k < visible.length; k++) {
+        var key = students[i] + "|" + visible[k];
+        var value = attMarks[key] || 0;
+
+        var cell = document.createElement("td");
+        cell.className = "mark " + markClasses[value];
+        cell.textContent = markNames[value];
+        cell.onclick = makeMarkClick(students[i], visible[k]);
+        row.appendChild(cell);
+      }
+
+      table.appendChild(row);
+    }
+  }
+
+  loadAttendance();
+  showAttendance();
+</script>
+  </script>
+</body>
+</html>
