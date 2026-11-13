@@ -231,17 +231,55 @@
       font-size: 12px;
       cursor: pointer;
     }
+#auth-bar { margin: 6px 0 10px 0; }
+    #auth-status { margin-right: 10px; font-size: 14px; color: #7a6a5a; }
+    #auth-bar button, #login-box button {
+      background-color: #FF8266;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      margin: 0 8px 8px 0;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #login-box {
+      background: white;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+    #login-box input {
+      padding: 8px;
+      margin: 0 6px 8px 0;
+      border: 1px solid #f0d2b0;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    #login-error { color: #C0392B; font-size: 14px; margin: 4px 0 0 0; }
+    .note { font-size: 13px; color: #7a6a5a; }
 </style>
 </head>
 
 <body>
 
   <h1>Группа Жбо-ТЖ/26.2: помощник старосты</h1>
+<div id="auth-bar">
+    <span id="auth-status">Просмотр без входа</span>
+    <button id="login-open" onclick="toggleLogin()">Вход для старосты</button>
+    <button id="logout-btn" onclick="logout()" style="display:none">Выйти</button>
+  </div>
 
+  <div id="login-box" style="display:none">
+    <input id="login-email" type="email" placeholder="Почта">
+    <input id="login-pass" type="password" placeholder="Пароль">
+    <button onclick="doLogin()">Войти</button>
+    <p id="login-error"></p>
+  </div>
   <nav>
     <button onclick="показать('raspisanie')">Расписание</button>
     <button onclick="показать('dz')">Домашние задания</button>
-    <button onclick="показать('poseshaemost')">Посещаемость</button>
+    <button id="tab-att" onclick="показать('poseshaemost')" style="display:none">Посещаемость</button>
   </nav>
 
   <section id="raspisanie">
@@ -277,7 +315,7 @@
 <section id="dz" style="display:none">
     <h2>Домашние задания</h2>
 
-    <div class="dz-form">
+    <div class="dz-form" id="hw-form" style="display:none">
       <select id="dz-subject">
         <option value="">Выбери предмет</option>
         <option>Введение в журналистику</option>
@@ -294,7 +332,7 @@
       <input id="dz-date" type="date">
       <button onclick="addHomework()">Добавить</button>
     </div>
-
+<p class="note" id="hw-message"></p>
     <ul id="dz-list"></ul>
   </section>
   <section id="poseshaemost" style="display:none">
@@ -311,7 +349,7 @@
     <button onclick="changeMonth(1)">→</button>
   </div>
   <p class="att-hint">Нажимай на ячейку: пусто → был → не был → болеет.</p>
-
+<p class="note" id="att-message"></p>
   <div class="att-scroll">
     <table id="att-table"></table>
   </div>
@@ -324,6 +362,8 @@
 
       for (let i = 0; i < блоки.length; i++) {
         document.getElementById(блоки[i]).style.display = "none";
+if (имя === "dz") { loadHomework(); }
+      if (имя === "poseshaemost") { loadAttendance(); }
       }
 
       document.getElementById(имя).style.display = "block";
@@ -459,170 +499,262 @@
     }
 нарисовать();
   </script>
-
 <script>
-  var homework = [];
+  var SB_URL = "https://zrjitdmgrwwkiofeoslz.supabase.co";
+  var SB_KEY = "sb_publishable_5nUhMV36KGLmhmI_AyjYsA_Lf3mBw9s";
 
-  function saveHomework() {
+  var session = null;
+  try { session = JSON.parse(localStorage.getItem("sbSession")); } catch (e) {}
+
+  function saveSession(s) {
+    session = s;
     try {
-      localStorage.setItem("homework", JSON.stringify(homework));
+      if (s) {
+        localStorage.setItem("sbSession", JSON.stringify({
+          access_token: s.access_token,
+          refresh_token: s.refresh_token
+        }));
+      } else {
+        localStorage.removeItem("sbSession");
+      }
     } catch (e) {}
   }
 
-  function loadHomework() {
-    try {
-      var saved = localStorage.getItem("homework");
-      if (saved) {
-        homework = JSON.parse(saved);
+  function rawFetch(method, path, body, prefer) {
+    var headers = { "apikey": SB_KEY, "Content-Type": "application/json" };
+    if (session) { headers["Authorization"] = "Bearer " + session.access_token; }
+    if (prefer) { headers["Prefer"] = prefer; }
+    var opts = { method: method, headers: headers };
+    if (body !== undefined) { opts.body = JSON.stringify(body); }
+    return fetch(SB_URL + path, opts);
+  }
+
+  function refreshSession() {
+    if (!session || !session.refresh_token) { return Promise.resolve(false); }
+    return fetch(SB_URL + "/auth/v1/token?grant_type=refresh_token", {
+      method: "POST",
+      headers: { "apikey": SB_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: session.refresh_token })
+    }).then(function (r) {
+      if (!r.ok) { return false; }
+      return r.json().then(function (j) { saveSession(j); return true; });
+    }).catch(function () { return false; });
+  }
+
+  function api(method, path, body, prefer) {
+    return rawFetch(method, path, body, prefer).then(function (r) {
+      if (r.status === 401 && session) {
+        return refreshSession().then(function (ok) {
+          if (!ok) {
+            saveSession(null);
+            updateAuthUI();
+            throw new Error("Сессия закончилась, войди заново");
+          }
+          return rawFetch(method, path, body, prefer);
+        });
       }
-    } catch (e) {
-      homework = [];
+      return r;
+    }).then(function (r) {
+      if (!r.ok) {
+        return r.text().then(function (t) { throw new Error(t || String(r.status)); });
+      }
+      return r.text().then(function (t) { return t ? JSON.parse(t) : null; });
+    });
+  }
+
+  function toggleLogin() {
+    var box = document.getElementById("login-box");
+    box.style.display = (box.style.display === "none") ? "block" : "none";
+  }
+
+  function doLogin() {
+    var email = document.getElementById("login-email").value.trim();
+    var pass = document.getElementById("login-pass").value;
+    var err = document.getElementById("login-error");
+    err.textContent = "";
+
+    fetch(SB_URL + "/auth/v1/token?grant_type=password", {
+      method: "POST",
+      headers: { "apikey": SB_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email, password: pass })
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+    }).then(function (x) {
+      if (!x.ok) { err.textContent = "Неверная почта или пароль"; return; }
+      saveSession(x.j);
+      document.getElementById("login-pass").value = "";
+      document.getElementById("login-box").style.display = "none";
+      updateAuthUI();
+      loadHomework();
+    }).catch(function () {
+      err.textContent = "Нет связи с базой. Проверь VPN и интернет.";
+    });
+  }
+
+  function logout() {
+    saveSession(null);
+    attStudents = []; attDates = []; attMarks = {};
+    updateAuthUI();
+    if (document.getElementById("poseshaemost").style.display === "block") {
+      показать("raspisanie");
     }
   }
 
+  function updateAuthUI() {
+    var logged = !!session;
+    document.getElementById("auth-status").textContent =
+      logged ? "Вы вошли как староста/зам" : "Просмотр без входа";
+    document.getElementById("login-open").style.display = logged ? "none" : "inline-block";
+    document.getElementById("logout-btn").style.display = logged ? "inline-block" : "none";
+    document.getElementById("tab-att").style.display = logged ? "inline-block" : "none";
+    document.getElementById("hw-form").style.display = logged ? "block" : "none";
+    showHomework();
+  }
+</script>
+<script>
+  var homework = [];
+
   function formatDate(d) {
-    if (d === "") {
-      return "";
-    }
+    if (!d) { return ""; }
     var parts = d.split("-");
     return parts[2] + "." + parts[1] + "." + parts[0];
   }
 
+  function loadHomework() {
+    api("GET", "/rest/v1/homework?select=*&order=due.asc.nullslast,id.asc")
+      .then(function (data) {
+        homework = data || [];
+        document.getElementById("hw-message").textContent = "";
+        showHomework();
+      })
+      .catch(function () {
+        document.getElementById("hw-message").textContent =
+          "Не удалось загрузить задания. Проверь интернет (нужен VPN).";
+      });
+  }
+
   function addHomework() {
-    var subject = document.getElementById("dz-subject").value.trim();
+    var subject = document.getElementById("dz-subject").value;
     var task = document.getElementById("dz-task").value.trim();
-    var date = document.getElementById("dz-date").value;
+    var due = document.getElementById("dz-date").value;
 
     if (subject === "" || task === "") {
-      alert("Впиши предмет и задание");
+      alert("Выбери предмет и впиши задание");
       return;
     }
 
-    homework.push({ subject: subject, task: task, date: date, done: false });
-
-    document.getElementById("dz-subject").value = "";
-    document.getElementById("dz-task").value = "";
-    document.getElementById("dz-date").value = "";
-
-    saveHomework();
-    showHomework();
+    api("POST", "/rest/v1/homework",
+        { subject: subject, task: task, due: due === "" ? null : due, done: false },
+        "return=minimal")
+      .then(function () {
+        document.getElementById("dz-subject").value = "";
+        document.getElementById("dz-task").value = "";
+        document.getElementById("dz-date").value = "";
+        loadHomework();
+      })
+      .catch(function (e) { alert("Не получилось сохранить: " + e.message); });
   }
 
-  function toggleHomework(i) {
-    homework[i].done = !homework[i].done;
-    saveHomework();
-    showHomework();
+  function toggleHomework(id, done) {
+    api("PATCH", "/rest/v1/homework?id=eq." + id, { done: !done }, "return=minimal")
+      .then(loadHomework)
+      .catch(function (e) { alert("Не получилось: " + e.message); });
   }
 
-  function deleteHomework(i) {
-    homework.splice(i, 1);
-    saveHomework();
-    showHomework();
+  function deleteHomework(id) {
+    if (!confirm("Удалить задание?")) { return; }
+    api("DELETE", "/rest/v1/homework?id=eq." + id)
+      .then(loadHomework)
+      .catch(function (e) { alert("Не получилось: " + e.message); });
   }
 
-  function makeToggle(i) {
-    return function () { toggleHomework(i); };
-  }
-
-  function makeDelete(i) {
-    return function () { deleteHomework(i); };
-  }
+  function makeToggle(id, done) { return function () { toggleHomework(id, done); }; }
+  function makeDelete(id) { return function () { deleteHomework(id); }; }
 
   function showHomework() {
     var list = document.getElementById("dz-list");
     list.innerHTML = "";
+    var logged = !!session;
 
     for (var i = 0; i < homework.length; i++) {
       var item = homework[i];
 
       var li = document.createElement("li");
-      if (item.done) {
-        li.className = "done";
-      }
+      if (item.done) { li.className = "done"; }
 
-      var box = document.createElement("input");
-      box.type = "checkbox";
-      box.checked = item.done;
-      box.onchange = makeToggle(i);
+      if (logged) {
+        var box = document.createElement("input");
+        box.type = "checkbox";
+        box.checked = item.done;
+        box.onchange = makeToggle(item.id, item.done);
+        li.appendChild(box);
+      }
 
       var text = document.createElement("span");
       var line = item.subject + ": " + item.task;
-      if (item.date !== "") {
-        line = line + " (до " + formatDate(item.date) + ")";
-      }
+      if (item.due) { line = line + " (до " + formatDate(item.due) + ")"; }
       text.textContent = line;
-
-      var del = document.createElement("button");
-      del.textContent = "Удалить";
-      del.onclick = makeDelete(i);
-
-      li.appendChild(box);
       li.appendChild(text);
-      li.appendChild(del);
+
+      if (logged) {
+        var del = document.createElement("button");
+        del.textContent = "Удалить";
+        del.onclick = makeDelete(item.id);
+        li.appendChild(del);
+      }
+
       list.appendChild(li);
     }
   }
-
-  loadHomework();
-  showHomework();
 </script>
 <script>
-  var students = [
-    "Алукер Е.Д.",
-    "Андреева Д.С.",
-    "Афиркина Д.В.",
-    "Ворошилова Н.",
-    "Горюнова А.А.",
-    "Зюзьков Д.М.",
-    "Индоиту А.А.",
-    "Кошелева П.",
-    "Маркин В.И.",
-    "Мартынова М.А.",
-    "Орлова Д.",
-    "Пискунова О.А.",
-    "Попов М.А.",
-    "Степанова Е.",
-    "Уткина А.М.",
-    "Черкасов И.С.",
-    "Шибаев Т.Е.",
-    "Шишлова Д.Д.",
-    "Шорин А.М."
-  ];
-
+  var attStudents = [];
   var attDates = [];
   var attMarks = {};
 
   var markNames = ["", "был", "не был", "болеет"];
   var markClasses = ["", "present", "absent", "sick"];
+  var monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+                    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
 
-  var monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-
-  // Текущий показываемый месяц в виде "2026-11"
-  var now = new Date();
-  var attMonth = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0");
-
-  function saveAttendance() {
-    try {
-      localStorage.setItem("attDates", JSON.stringify(attDates));
-      localStorage.setItem("attMarks", JSON.stringify(attMarks));
-    } catch (e) {}
-  }
-
-  function loadAttendance() {
-    try {
-      var d = localStorage.getItem("attDates");
-      var m = localStorage.getItem("attMarks");
-      if (d) { attDates = JSON.parse(d); }
-      if (m) { attMarks = JSON.parse(m); }
-    } catch (e) {
-      attDates = [];
-      attMarks = {};
-    }
-  }
+  var nowDate = new Date();
+  var attMonth = nowDate.getFullYear() + "-" + String(nowDate.getMonth() + 1).padStart(2, "0");
 
   function shortDate(d) {
     var parts = d.split("-");
     return parts[2] + "." + parts[1];
+  }
+
+  function nextMonthStart(ym) {
+    var parts = ym.split("-");
+    var y = Number(parts[0]);
+    var m = Number(parts[1]) + 1;
+    if (m > 12) { m = 1; y = y + 1; }
+    return y + "-" + String(m).padStart(2, "0") + "-01";
+  }
+
+  function loadAttendance() {
+    if (!session) { return; }
+    var first = attMonth + "-01";
+    var next = nextMonthStart(attMonth);
+
+    Promise.all([
+      api("GET", "/rest/v1/students?select=id,name&order=id.asc"),
+      api("GET", "/rest/v1/att_dates?select=day&order=day.asc"),
+      api("GET", "/rest/v1/att_marks?select=student_id,day,mark&day=gte." + first + "&day=lt." + next)
+    ]).then(function (res) {
+      attStudents = res[0] || [];
+      attDates = (res[1] || []).map(function (r) { return r.day; });
+      attMarks = {};
+      (res[2] || []).forEach(function (r) {
+        attMarks[r.student_id + "|" + r.day] = r.mark;
+      });
+      document.getElementById("att-message").textContent = "";
+      showAttendance();
+    }).catch(function (e) {
+      document.getElementById("att-message").textContent =
+        "Не удалось связаться с базой: " + e.message;
+    });
   }
 
   function changeMonth(delta) {
@@ -632,78 +764,66 @@
     if (m < 1) { m = 12; y = y - 1; }
     if (m > 12) { m = 1; y = y + 1; }
     attMonth = y + "-" + String(m).padStart(2, "0");
-    showAttendance();
+    loadAttendance();
   }
 
   function addDate() {
     var date = document.getElementById("att-date").value;
-    if (date === "") {
-      alert("Выбери дату");
-      return;
-    }
-    for (var i = 0; i < attDates.length; i++) {
-      if (attDates[i] === date) {
-        alert("Такая дата уже есть");
-        return;
-      }
-    }
-    attDates.push(date);
-    attDates.sort();
-    attMonth = date.substring(0, 7);
-    document.getElementById("att-date").value = "";
-    saveAttendance();
-    showAttendance();
+    if (date === "") { alert("Выбери дату"); return; }
+
+    api("POST", "/rest/v1/att_dates", { day: date }, "return=minimal")
+      .then(function () {
+        attMonth = date.substring(0, 7);
+        document.getElementById("att-date").value = "";
+        loadAttendance();
+      })
+      .catch(function (e) {
+        if (e.message.indexOf("23505") !== -1) {
+          alert("Такая дата уже есть");
+        } else {
+          alert("Не получилось: " + e.message);
+        }
+      });
   }
 
   function deleteDate(date) {
-    if (!confirm("Удалить дату " + shortDate(date) + " и все отметки за этот день?")) {
-      return;
-    }
-    var newDates = [];
-    for (var i = 0; i < attDates.length; i++) {
-      if (attDates[i] !== date) {
-        newDates.push(attDates[i]);
-      }
-    }
-    attDates = newDates;
+    if (!confirm("Удалить дату " + shortDate(date) + " и все отметки за этот день?")) { return; }
+    api("DELETE", "/rest/v1/att_dates?day=eq." + date)
+      .then(loadAttendance)
+      .catch(function (e) { alert("Не получилось: " + e.message); });
+  }
 
-    for (var key in attMarks) {
-      if (key.split("|")[1] === date) {
-        delete attMarks[key];
-      }
-    }
-
-    saveAttendance();
+  function clickMark(studentId, day) {
+    var key = studentId + "|" + day;
+    var newValue = ((attMarks[key] || 0) + 1) % 4;
+    attMarks[key] = newValue;
     showAttendance();
+
+    var request;
+    if (newValue === 0) {
+      request = api("DELETE", "/rest/v1/att_marks?student_id=eq." + studentId + "&day=eq." + day);
+    } else {
+      request = api("POST", "/rest/v1/att_marks",
+                    { student_id: studentId, day: day, mark: newValue },
+                    "resolution=merge-duplicates,return=minimal");
+    }
+    request.catch(function (e) {
+      alert("Отметка не сохранилась: " + e.message);
+      loadAttendance();
+    });
   }
 
-  function makeDeleteDate(date) {
-    return function () { deleteDate(date); };
-  }
-
-  function clickMark(s, d) {
-    var key = s + "|" + d;
-    var current = attMarks[key] || 0;
-    attMarks[key] = (current + 1) % 4;
-    saveAttendance();
-    showAttendance();
-  }
-
-  function makeMarkClick(s, d) {
-    return function () { clickMark(s, d); };
-  }
+  function makeMarkClick(s, d) { return function () { clickMark(s, d); }; }
+  function makeDeleteDate(d) { return function () { deleteDate(d); }; }
 
   function showAttendance() {
-    // Названия месяца над таблицей
     var mp = attMonth.split("-");
-    document.getElementById("att-month-label").textContent = monthNames[Number(mp[1]) - 1] + " " + mp[0];
+    document.getElementById("att-month-label").textContent =
+      monthNames[Number(mp[1]) - 1] + " " + mp[0];
 
-    // Только даты выбранного месяца
     var visible = [];
     for (var v = 0; v < attDates.length; v++) {
-      if (attDates[v].substring(0, 7) === attMonth) {
-        visible.push(attDates[v]);
-      }
+      if (attDates[v].substring(0, 7) === attMonth) { visible.push(attDates[v]); }
     }
 
     var table = document.getElementById("att-table");
@@ -717,43 +837,45 @@
     for (var j = 0; j < visible.length; j++) {
       var th = document.createElement("th");
       th.appendChild(document.createTextNode(shortDate(visible[j])));
-
       var del = document.createElement("button");
       del.className = "del-date";
       del.textContent = "×";
-del.onclick = makeDeleteDate(visible[j]);
+      del.onclick = makeDeleteDate(visible[j]);
       th.appendChild(del);
-
       head.appendChild(th);
     }
     table.appendChild(head);
 
-    for (var i = 0; i < students.length; i++) {
+    for (var i = 0; i < attStudents.length; i++) {
+      var st = attStudents[i];
       var row = document.createElement("tr");
 
       var nameCell = document.createElement("td");
       nameCell.className = "name";
-      nameCell.textContent = students[i];
+      nameCell.textContent = st.name;
       row.appendChild(nameCell);
 
       for (var k = 0; k < visible.length; k++) {
-        var key = students[i] + "|" + visible[k];
-        var value = attMarks[key] || 0;
-
+        var value = attMarks[st.id + "|" + visible[k]] || 0;
         var cell = document.createElement("td");
         cell.className = "mark " + markClasses[value];
         cell.textContent = markNames[value];
-        cell.onclick = makeMarkClick(students[i], visible[k]);
+        cell.onclick = makeMarkClick(st.id, visible[k]);
         row.appendChild(cell);
       }
-
       table.appendChild(row);
     }
   }
 
-  loadAttendance();
-  showAttendance();
+  // ---- Запуск ----
+  updateAuthUI();
+  loadHomework();
+
+  setInterval(function () {
+    if (document.hidden) { return; }
+    if (document.getElementById("dz").style.display === "block") { loadHomework(); }
+    if (document.getElementById("poseshaemost").style.display === "block") { loadAttendance(); }
+  }, 60000);
 </script>
-  </script>
 </body>
 </html>
