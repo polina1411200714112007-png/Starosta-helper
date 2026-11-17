@@ -1,4 +1,1195 @@
-t.getElementById("link-title").value.trim();
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Сайт старосты</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #FFECD7;
+      color: #2d2a3e;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #FF8800;
+    }
+
+    nav button, .недели button {
+      background-color: #FF8266;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    nav button:hover, .недели button:hover {
+      background-color: #E86A4F;
+    }
+
+    .недели button.активна {
+      background-color: #FF8800;
+      box-shadow: 0 0 0 3px #FFD199;
+    }
+
+    section {
+      background-color: white;
+      padding: 15px 20px;
+      margin-top: 20px;
+      border-radius: 12px;
+    }
+
+    .прокрутка {
+      overflow-x: auto;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background-color: white;
+    }
+
+    th, td {
+      border: 1px solid #f0d2b0;
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
+      vertical-align: top;
+      min-width: 130px;
+    }
+
+    th {
+      background-color: #FFB45E;
+    }
+
+    td.день {
+      font-weight: bold;
+      background-color: #FFF3E6;
+      min-width: 100px;
+    }
+
+    tr.сегодня td.день {
+      background-color: #FF8800;
+      color: white;
+    }
+
+    .тип, .доп {
+      display:block;
+      font-size: 12px;
+      color: #7a6a5a;
+    }
+
+  .dz-form input, .dz-form select {
+      padding: 8px;
+      margin: 0 6px 8px 0;
+      border: 1px solid #f0d2b0;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    .dz-form button {
+      background-color: #FF8266;
+      color: white;
+      border: none;
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    #dz-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    #dz-list li {
+      background-color: #FFF3E6;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+    }
+
+    #dz-list li.done span {
+      text-decoration: line-through;
+      color: #999;
+    }
+
+    #dz-list li input {
+      margin-right: 10px;
+    }
+
+    #dz-list li button {
+      float: right;
+      background-color: #E86A4F;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+.dz-form select {
+      padding: 8px;
+      margin: 0 6px 8px 0;
+      border: 1px solid #f0d2b0;
+      border-radius: 8px;
+      font-size: 15px;
+      background-color: white;
+      color: #2d2a3e;
+    }
+.att-form input {
+      padding: 8px;
+      margin: 0 6px 8px 0;
+      border: 1px solid #f0d2b0;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    .att-form button {
+      background-color: #FF8266;
+      color: white;
+      border: none;
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .att-hint {
+      font-size: 13px;
+      color: #7a6a5a;
+    }
+
+    .att-scroll {
+      overflow-x: auto;
+    }
+
+    #att-table td, #att-table th {
+      min-width: 60px;
+      padding: 6px;
+      font-size: 13px;
+    }
+
+    #att-table td.name {
+      text-align: left;
+      min-width: 130px;
+      font-weight: bold;
+      background-color: #FFF3E6;
+    }
+
+    #att-table td.mark {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #att-table td.present {
+      background-color: #CDEFCB;
+    }
+
+    #att-table td.absent {
+      background-color: #F6C6C0;
+    }
+
+    #att-table td.sick {
+      background-color: #FFE7A3;
+    }
+.att-month {
+      margin: 10px 0;
+    }
+
+    .att-month button {
+      background-color: #FF8800;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #att-month-label {
+      display: inline-block;
+      min-width: 150px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .del-date {
+      display: block;
+      margin: 4px auto 0 auto;
+      background-color: #E86A4F;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+#auth-bar { margin: 6px 0 10px 0; }
+    #auth-status { margin-right: 10px; font-size: 14px; color: #7a6a5a; }
+    #auth-bar button, #login-box button {
+      background-color: #FF8266;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      margin: 0 8px 8px 0;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #login-box {
+      background: white;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+    #login-box input {
+      padding: 8px;
+      margin: 0 6px 8px 0;
+      border: 1px solid #f0d2b0;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+    #login-error { color: #C0392B; font-size: 14px; margin: 4px 0 0 0; }
+    .note { font-size: 13px; color: #7a6a5a; }
+.dz-form textarea {
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 70px;
+      padding: 8px;
+      margin: 0 6px 8px 0;
+      border: 1px solid #f0d2b0;
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+    }
+    .file-label { display: block; font-size: 13px; color: #7a6a5a; margin: 0 0 8px 0; }
+    .cards { list-style: none; padding: 0; }
+    .cards li {
+      background-color: #FFF3E6;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+    }
+    .cards li.past { opacity: 0.55; }
+    .cards .del-btn {
+      float: right;
+      background-color: #E86A4F;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      padding: 4px 10px;
+    }
+    .req { white-space: pre-wrap; margin: 6px 0; }
+    .thumb { display: block; max-width: 100%; max-height: 260px; margin-top: 8px; border-radius: 8px; }
+</style>
+</head>
+
+<body>
+
+  <h1>Группа Жбо-ТЖ/26.2: помощник старосты</h1>
+<div id="auth-bar">
+    <span id="auth-status">Просмотр без входа</span>
+    <button id="login-open" onclick="toggleLogin()">Вход для старосты</button>
+    <button id="logout-btn" onclick="logout()" style="display:none">Выйти</button>
+  </div>
+
+  <div id="login-box" style="display:none">
+    <input id="login-email" type="email" placeholder="Почта">
+    <input id="login-pass" type="password" placeholder="Пароль">
+    <button onclick="doLogin()">Войти</button>
+    <p id="login-error"></p>
+  </div>
+  <nav>
+    <button onclick="показать('raspisanie')">Расписание</button>
+    <button onclick="показать('dz')">Домашние задания</button>
+    <button id="tab-att" onclick="показать('poseshaemost')" style="display:none">Посещаемость</button>
+  </nav>
+
+  <section id="raspisanie">
+    <h2>Расписание</h2>
+
+    <div class="недели">
+      <button id="кнопка1" onclick="выбратьНеделю(1)">I неделя</button>
+      <button id="кнопка2" onclick="выбратьНеделю(2)">II неделя</button>
+    </div>
+
+    <div class="прокрутка">
+      <table>
+        <thead>
+          <tr>
+            <th>День</th>
+            <th>1 пара
+08:30–10:00</th>
+            <th>2 пара
+10:10–11:40</th>
+            <th>3 пара
+11:50–13:20</th>
+            <th>4 пара
+13:50–15:20</th>
+            <th>5 пара
+15:30–17:00</th>
+          </tr>
+        </thead>
+        <tbody id="тело"></tbody>
+      </table>
+    </div>
+  </section>
+    
+<section id="dz" style="display:none">
+    <h2>Домашние задания</h2>
+
+    <div class="dz-form" id="hw-form" style="display:none">
+      <select id="dz-subject">
+        <option value="">Выбери предмет</option>
+        <option>Введение в журналистику</option>
+        <option>Основы теории литературы</option>
+        <option>История зарубежной литературы</option>
+        <option>История русской литературы</option>
+        <option>Современный русский язык</option>
+        <option>Иностранный язык</option>
+        <option>Основы российской государственности</option>
+        <option>Духовно-нравственная культура народов РФ</option>
+        <option>Шейпинг</option>
+      </select>
+      <input id="dz-task" type="text" placeholder="Задание">
+      <input id="dz-date" type="date">
+<label class="file-label">Картинка к заданию (png или jpg, до 5 МБ)</label>
+      <input id="dz-file" type="file" accept="image/png,image/jpeg">
+      <button onclick="addHomework()">Добавить</button>
+    </div>
+<p class="note" id="hw-message"></p>
+    <ul id="dz-list"></ul>
+  </section>
+  <section id="poseshaemost" style="display:none">
+  <h2>Посещаемость</h2>
+
+  <div class="att-form">
+    <input id="att-date" type="date">
+    <button onclick="addDate()">Добавить дату</button>
+  </div>
+
+<div class="att-month">
+    <button onclick="changeMonth(-1)">←</button>
+    <span id="att-month-label"></span>
+    <button onclick="changeMonth(1)">→</button>
+  </div>
+  <p class="att-hint">Нажимай на ячейку: пусто → был → не был → болеет.</p>
+<p class="note" id="att-message"></p>
+  <div class="att-scroll">
+    <table id="att-table"></table>
+  </div>
+  </section>
+<section id="exams" style="display:none">
+    <h2>Зачёты</h2>
+
+    <div class="dz-form" id="ex-form" style="display:none">
+      <select id="ex-subject">
+        <option value="">Выбери предмет</option>
+        <option>Введение в журналистику</option>
+        <option>Основы теории литературы</option>
+        <option>История зарубежной литературы</option>
+        <option>История русской литературы</option>
+        <option>Современный русский язык</option>
+        <option>Иностранный язык</option>
+        <option>Основы российской государственности</option>
+        <option>Духовно-нравственная культура народов РФ</option>
+        <option>Шейпинг</option>
+      </select>
+      <input id="ex-date" type="date">
+      <textarea id="ex-req" placeholder="Что нужно для зачёта"></textarea>
+      <label class="file-label">Файл с билетами (png, jpg, pdf, doc, docx, до 5 МБ)</label>
+      <input id="ex-file" type="file" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx">
+      <button onclick="addExam()">Добавить зачёт</button>
+    </div>
+
+    <p class="note" id="ex-message"></p>
+    <ul id="ex-list" class="cards"></ul>
+  </section>
+
+  <section id="links" style="display:none">
+    <h2>Полезные ссылки</h2>
+
+    <div class="dz-form" id="link-form" style="display:none">
+      <input id="link-title" type="text" placeholder="Название (например, Канал факультета)">
+      <input id="link-url" type="text" placeholder="Ссылка или @канал">
+      <input id="link-note" type="text" placeholder="Пояснение (необязательно)">
+      <button onclick="addLink()">Добавить ссылку</button>
+    </div>
+
+    <p class="note" id="link-message"></p>
+    <ul id="link-list" class="cards"></ul>
+  </section>
+  <script>
+    // ---------- Переключение вкладок ----------
+    function показать(имя) {
+      let блоки = ["raspisanie", "dz", "exams", "links", "poseshaemost"];
+
+      for (let i = 0; i < блоки.length; i++) {
+        document.getElementById(блоки[i]).style.display = "none";
+if (имя === "dz") { loadHomework(); }
+      if (имя === "poseshaemost") { loadAttendance(); }
+      }
+
+      document.getElementById(имя).style.display = "block";
+    }
+
+    // ---------- Данные расписания ----------
+    // п(...) создаёт одну пару. Пустая пара записывается как null.
+    function п(название, тип, преподаватель, аудитория) {
+      return { название, тип, преподаватель, аудитория };
+    }
+
+    const дни = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
+
+    // В каждом дне 5 пар (с 1 по 5)
+    const расписание = {
+      1: {
+        "Понедельник": [
+          null,
+          null,
+          п("Введение в журналистику", "Лекция", "Галкина Ю.В.", "ауд. 101"),
+          п("Введение в журналистику", "Лекция", "Галкина Ю.В.", "ауд. 101"),
+          п("Введение в журналистику", "Практическое занятие", "Галкина Ю.В.", "ауд. 101")
+        ],
+        "Вторник": [
+          null,
+          п("Основы теории литературы", "Лекция", "Кихней Л.Г.", "ауд. 314"),
+          п("Основы теории литературы", "Практическое занятие", "", "ауд. 112"),
+          null,
+          null
+        ],
+        "Среда": [
+          null,
+          п("История зарубежной литературы", "Лекция", "Занегина А.А.", "ауд. 201"),
+          п("Современный русский язык", "Лекция", "Шуйская Ю.В.", "ауд. 314"),
+          п("Духовно-нравственная культура народов РФ", "Лекция", "Чайко И.В.", "ауд. 223"),
+          п("Духовно-нравственная культура народов РФ", "Практическое занятие", "Чайко И.В.", "ауд. 223")
+        ],
+        "Четверг": [
+          null,
+          null,
+          п("История русской литературы", "Лекция", "Александров И.А.", "ауд. 101"),
+          п("История русской литературы", "Практическое занятие", "Александров И.А.", "ауд. 209"),
+          null
+        ],
+        "Пятница": [null, null, null, null, null],
+        "Суббота": [null, null, null, null, null]
+      },
+
+      2: {
+        "Понедельник": [
+          null,
+          п("Введение в журналистику", "Практическое занятие", "Галкина Ю.В.", "ауд. 223"),
+          п("Введение в журналистику", "Практическое занятие", "Галкина Ю.В.", "ауд. 223"),
+          null,
+          null
+        ],
+        "Вторник": [
+          п("История зарубежной литературы", "Практическое занятие", "Занегина А.А.", "ауд. 208"),
+          п("История зарубежной литературы", "Практическое занятие", "Занегина А.А.", "ауд. 208"),
+          п("Иностранный язык", "Практическое занятие", "Малышева Е.Л.", "ауд. 216"),
+          п("Иностранный язык", "Практическое занятие", "Малышева Е.Л.", "ауд. 216"),
+          null
+        ],
+        "Среда": [
+          п("Основы российской государственности", "Практическое занятие", "Артемов Г.А.", "ауд. 207"),
+          п("Современный русский язык", "Лекция", "Шуйская Ю.В.", "ауд. 314"),
+          п("Основы российской государственности", "Лекция", "Артемов Г.А.", "ауд. 207"),
+          null,
+          null
+        ],
+        "Четверг": [
+          null,
+          п("Современный русский язык", "Практическое занятие", "Шуйская Ю.В.", "ауд. 223"),
+          п("Современный русский язык", "Практическое занятие", "Шуйская Ю.В.", "ауд. 223"),
+          п("История русской литературы", "Практическое занятие", "Александров И.А.", "ауд. 209"),
+          null
+        ],
+        "Пятница": [
+          null,
+          null,
+          п("Шейпинг", "Практическое занятие", "Иванов В.Б.", "Спортзал (м. Тульская)"),
+          null,
+          null
+        ],
+        "Суббота": [null, null, null, null, null]
+      }
+    };
+
+    // ---------- Рисуем таблицу ----------
+    let текущаяНеделя = 1;
+
+    function выбратьНеделю(номер) {
+      текущаяНеделя = номер;
+      нарисовать();
+    }
+
+    function нарисовать() {
+      let названияДней = ["Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"];
+      let сегодня = названияДней[new Date().getDay()];
+      let html = "";
+
+      for (let d = 0; d < дни.length; d++) {
+        let день = дни[d];
+        let пары = расписание[текущаяНеделя][день];
+
+        if (день === сегодня) {
+          html += '<tr class="сегодня">';
+        } else {
+          html += "<tr>";
+        }
+        html += '<td class="день">' + день + "</td>";
+
+        for (let i = 0; i < пары.length; i++) {
+          let пара = пары[i];
+          if (пара === null) {
+            html += "<td></td>";
+          } else {
+            html += "<td><b>" + пара.название + "</b>";
+            html += '<span class="тип">' + пара.тип + "</span>";
+            if (пара.преподаватель !== "") {
+              html += '<span class="доп">' + пара.преподаватель + "</span>";
+            }
+            html += '<span class="доп">' + пара.аудитория + "</span></td>"
+            }
+          }
+        html += "</tr>";
+      }
+
+      document.getElementById("тело").innerHTML = html;
+
+      document.getElementById("кнопка1").className = (текущаяНеделя === 1) ? "активна" : "";
+      document.getElementById("кнопка2").className = (текущаяНеделя === 2) ? "активна" : "";
+    }
+нарисовать();
+  </script>
+<script>
+  var SB_URL = "https://zrjitdmgrwwkiofeoslz.supabase.co";
+  var SB_KEY = "sb_publishable_5nUhMV36KGLmhmI_AyjYsA_Lf3mBw9s";
+
+  var session = null;
+  try { session = JSON.parse(localStorage.getItem("sbSession")); } catch (e) {}
+
+  function saveSession(s) {
+    session = s;
+    try {
+      if (s) {
+        localStorage.setItem("sbSession", JSON.stringify({
+          access_token: s.access_token,
+          refresh_token: s.refresh_token
+        }));
+      } else {
+        localStorage.removeItem("sbSession");
+      }
+    } catch (e) {}
+  }
+
+  function rawFetch(method, path, body, prefer) {
+    var headers = { "apikey": SB_KEY, "Content-Type": "application/json" };
+    if (session) { headers["Authorization"] = "Bearer " + session.access_token; }
+    if (prefer) { headers["Prefer"] = prefer; }
+    var opts = { method: method, headers: headers };
+    if (body !== undefined) { opts.body = JSON.stringify(body); }
+    return fetch(SB_URL + path, opts);
+  }
+
+  function refreshSession() {
+    if (!session || !session.refresh_token) { return Promise.resolve(false); }
+    return fetch(SB_URL + "/auth/v1/token?grant_type=refresh_token", {
+      method: "POST",
+      headers: { "apikey": SB_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: session.refresh_token })
+    }).then(function (r) {
+      if (!r.ok) { return false; }
+      return r.json().then(function (j) { saveSession(j); return true; });
+    }).catch(function () { return false; });
+  }
+
+  function api(method, path, body, prefer) {
+    return rawFetch(method, path, body, prefer).then(function (r) {
+      if (r.status === 401 && session) {
+        return refreshSession().then(function (ok) {
+          if (!ok) {
+            saveSession(null);
+            updateAuthUI();
+            throw new Error("Сессия закончилась, войди заново");
+          }
+          return rawFetch(method, path, body, prefer);
+        });
+      }
+      return r;
+    }).then(function (r) {
+      if (!r.ok) {
+        return r.text().then(function (t) { throw new Error(t || String(r.status)); });
+      }
+      return r.text().then(function (t) { return t ? JSON.parse(t) : null; });
+    });
+  }
+
+  function toggleLogin() {
+    var box = document.getElementById("login-box");
+    box.style.display = (box.style.display === "none") ? "block" : "none";
+  }
+
+  function doLogin() {
+    var email = document.getElementById("login-email").value.trim();
+    var pass = document.getElementById("login-pass").value;
+    var err = document.getElementById("login-error");
+    err.textContent = "";
+
+    fetch(SB_URL + "/auth/v1/token?grant_type=password", {
+      method: "POST",
+      headers: { "apikey": SB_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email, password: pass })
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+    }).then(function (x) {
+      if (!x.ok) { err.textContent = "Неверная почта или пароль"; return; }
+      saveSession(x.j);
+      document.getElementById("login-pass").value = "";
+      document.getElementById("login-box").style.display = "none";
+      updateAuthUI();
+      loadHomework();
+    }).catch(function () {
+      err.textContent = "Нет связи с базой. Проверь VPN и интернет.";
+    });
+  }
+
+  function logout() {
+    saveSession(null);
+    attStudents = []; attDates = []; attMarks = {};
+    updateAuthUI();
+    if (document.getElementById("poseshaemost").style.display === "block") {
+      показать("raspisanie");
+    }
+  }
+
+  function updateAuthUI() {
+    var logged = !!session;
+    document.getElementById("auth-status").textContent =
+      logged ? "Вы вошли как староста/зам" : "Просмотр без входа";
+    document.getElementById("login-open").style.display = logged ? "none" : "inline-block";
+    document.getElementById("logout-btn").style.display = logged ? "inline-block" : "none";
+    document.getElementById("tab-att").style.display = logged ? "inline-block" : "none";
+    document.getElementById("hw-form").style.display = logged ? "block" : "none";
+    showHomework();
+  }
+</script>
+<script>
+  var homework = [];
+
+  function formatDate(d) {
+    if (!d) { return ""; }
+    var parts = d.split("-");
+    return parts[2] + "." + parts[1] + "." + parts[0];
+  }
+
+  function loadHomework() {
+    api("GET", "/rest/v1/homework?select=*&order=due.asc.nullslast,id.asc")
+      .then(function (data) {
+        homework = data || [];
+        document.getElementById("hw-message").textContent = "";
+        showHomework();
+      })
+      .catch(function () {
+        document.getElementById("hw-message").textContent =
+          "Не удалось загрузить задания. Проверь интернет (нужен VPN).";
+      });
+  }
+
+  function addHomework() {
+    var subject = document.getElementById("dz-subject").value;
+    var task = document.getElementById("dz-task").value.trim();
+    var due = document.getElementById("dz-date").value;
+
+    if (subject === "" || task === "") {
+      alert("Выбери предмет и впиши задание");
+      return;
+    }
+
+    api("POST", "/rest/v1/homework",
+        { subject: subject, task: task, due: due === "" ? null : due, done: false },
+        "return=minimal")
+      .then(function () {
+        document.getElementById("dz-subject").value = "";
+        document.getElementById("dz-task").value = "";
+        document.getElementById("dz-date").value = "";
+        loadHomework();
+      })
+      .catch(function (e) { alert("Не получилось сохранить: " + e.message); });
+  }
+
+  function toggleHomework(id, done) {
+    api("PATCH", "/rest/v1/homework?id=eq." + id, { done: !done }, "return=minimal")
+      .then(loadHomework)
+      .catch(function (e) { alert("Не получилось: " + e.message); });
+  }
+
+  function deleteHomework(id) {
+    if (!confirm("Удалить задание?")) { return; }
+    api("DELETE", "/rest/v1/homework?id=eq." + id)
+      .then(loadHomework)
+      .catch(function (e) { alert("Не получилось: " + e.message); });
+  }
+
+  function makeToggle(id, done) { return function () { toggleHomework(id, done); }; }
+  function makeDelete(id) { return function () { deleteHomework(id); }; }
+
+  function showHomework() {
+    var list = document.getElementById("dz-list");
+    list.innerHTML = "";
+    var logged = !!session;
+
+    for (var i = 0; i < homework.length; i++) {
+      var item = homework[i];
+
+      var li = document.createElement("li");
+      if (item.done) { li.className = "done"; }
+
+      if (logged) {
+        var box = document.createElement("input");
+        box.type = "checkbox";
+        box.checked = item.done;
+        box.onchange = makeToggle(item.id, item.done);
+        li.appendChild(box);
+      }
+
+      var text = document.createElement("span");
+      var line = item.subject + ": " + item.task;
+      if (item.due) { line = line + " (до " + formatDate(item.due) + ")"; }
+      text.textContent = line;
+      li.appendChild(text);
+
+      if (logged) {
+        var del = document.createElement("button");
+        del.textContent = "Удалить";
+        del.onclick = makeDelete(item.id);
+        li.appendChild(del);
+      }
+
+      list.appendChild(li);
+    }
+  }
+</script>
+<script>
+  var attStudents = [];
+  var attDates = [];
+  var attMarks = {};
+
+  var markNames = ["", "был", "не был", "болеет"];
+  var markClasses = ["", "present", "absent", "sick"];
+  var monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+                    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+
+  var nowDate = new Date();
+  var attMonth = nowDate.getFullYear() + "-" + String(nowDate.getMonth() + 1).padStart(2, "0");
+
+  function shortDate(d) {
+    var parts = d.split("-");
+    return parts[2] + "." + parts[1];
+  }
+
+  function nextMonthStart(ym) {
+    var parts = ym.split("-");
+    var y = Number(parts[0]);
+    var m = Number(parts[1]) + 1;
+    if (m > 12) { m = 1; y = y + 1; }
+    return y + "-" + String(m).padStart(2, "0") + "-01";
+  }
+
+  function loadAttendance() {
+    if (!session) { return; }
+    var first = attMonth + "-01";
+    var next = nextMonthStart(attMonth);
+
+    Promise.all([
+      api("GET", "/rest/v1/students?select=id,name&order=id.asc"),
+      api("GET", "/rest/v1/att_dates?select=day&order=day.asc"),
+      api("GET", "/rest/v1/att_marks?select=student_id,day,mark&day=gte." + first + "&day=lt." + next)
+    ]).then(function (res) {
+      attStudents = res[0] || [];
+      attDates = (res[1] || []).map(function (r) { return r.day; });
+      attMarks = {};
+      (res[2] || []).forEach(function (r) {
+        attMarks[r.student_id + "|" + r.day] = r.mark;
+      });
+      document.getElementById("att-message").textContent = "";
+      showAttendance();
+    }).catch(function (e) {
+      document.getElementById("att-message").textContent =
+        "Не удалось связаться с базой: " + e.message;
+    });
+  }
+
+  function changeMonth(delta) {
+    var parts = attMonth.split("-");
+    var y = Number(parts[0]);
+    var m = Number(parts[1]) + delta;
+    if (m < 1) { m = 12; y = y - 1; }
+    if (m > 12) { m = 1; y = y + 1; }
+    attMonth = y + "-" + String(m).padStart(2, "0");
+    loadAttendance();
+  }
+
+  function addDate() {
+    var date = document.getElementById("att-date").value;
+    if (date === "") { alert("Выбери дату"); return; }
+
+    api("POST", "/rest/v1/att_dates", { day: date }, "return=minimal")
+      .then(function () {
+        attMonth = date.substring(0, 7);
+        document.getElementById("att-date").value = "";
+        loadAttendance();
+      })
+      .catch(function (e) {
+        if (e.message.indexOf("23505") !== -1) {
+          alert("Такая дата уже есть");
+        } else {
+          alert("Не получилось: " + e.message);
+        }
+      });
+  }
+
+  function deleteDate(date) {
+    if (!confirm("Удалить дату " + shortDate(date) + " и все отметки за этот день?")) { return; }
+    api("DELETE", "/rest/v1/att_dates?day=eq." + date)
+      .then(loadAttendance)
+      .catch(function (e) { alert("Не получилось: " + e.message); });
+  }
+
+  function clickMark(studentId, day) {
+    var key = studentId + "|" + day;
+    var newValue = ((attMarks[key] || 0) + 1) % 4;
+    attMarks[key] = newValue;
+    showAttendance();
+
+    var request;
+    if (newValue === 0) {
+      request = api("DELETE", "/rest/v1/att_marks?student_id=eq." + studentId + "&day=eq." + day);
+    } else {
+      request = api("POST", "/rest/v1/att_marks",
+                    { student_id: studentId, day: day, mark: newValue },
+                    "resolution=merge-duplicates,return=minimal");
+    }
+    request.catch(function (e) {
+      alert("Отметка не сохранилась: " + e.message);
+      loadAttendance();
+    });
+  }
+
+  function makeMarkClick(s, d) { return function () { clickMark(s, d); }; }
+  function makeDeleteDate(d) { return function () { deleteDate(d); }; }
+
+  function showAttendance() {
+    var mp = attMonth.split("-");
+    document.getElementById("att-month-label").textContent =
+      monthNames[Number(mp[1]) - 1] + " " + mp[0];
+
+    var visible = [];
+    for (var v = 0; v < attDates.length; v++) {
+      if (attDates[v].substring(0, 7) === attMonth) { visible.push(attDates[v]); }
+    }
+
+    var table = document.getElementById("att-table");
+    table.innerHTML = "";
+
+    var head = document.createElement("tr");
+    var corner = document.createElement("th");
+    corner.textContent = "Студент";
+    head.appendChild(corner);
+
+    for (var j = 0; j < visible.length; j++) {
+      var th = document.createElement("th");
+      th.appendChild(document.createTextNode(shortDate(visible[j])));
+      var del = document.createElement("button");
+      del.className = "del-date";
+      del.textContent = "×";
+      del.onclick = makeDeleteDate(visible[j]);
+      th.appendChild(del);
+      head.appendChild(th);
+    }
+    table.appendChild(head);
+
+    for (var i = 0; i < attStudents.length; i++) {
+      var st = attStudents[i];
+      var row = document.createElement("tr");
+
+      var nameCell = document.createElement("td");
+      nameCell.className = "name";
+      nameCell.textContent = st.name;
+      row.appendChild(nameCell);
+
+      for (var k = 0; k < visible.length; k++) {
+        var value = attMarks[st.id + "|" + visible[k]] || 0;
+        var cell = document.createElement("td");
+        cell.className = "mark " + markClasses[value];
+        cell.textContent = markNames[value];
+        cell.onclick = makeMarkClick(st.id, visible[k]);
+        row.appendChild(cell);
+      }
+      table.appendChild(row);
+    }
+  }
+
+  // ---- Запуск ----
+  updateAuthUI();
+  loadHomework();
+
+  setInterval(function () {
+    if (document.hidden) { return; }
+    if (document.getElementById("dz").style.display === "block") { loadHomework(); }
+    if (document.getElementById("poseshaemost").style.display === "block") { loadAttendance(); }
+  }, 60000);
+</script>
+<script>
+  // ---------- Файлы в хранилище ----------
+  function fileUrl(path) {
+    return SB_URL + "/storage/v1/object/public/files/" + path;
+  }
+
+  function uploadFile(file, folder, allowed) {
+    var ext = (file.name.split(".").pop() || "").toLowerCase();
+    if (allowed.indexOf(ext) === -1) {
+      return Promise.reject(new Error("Можно загружать только: " + allowed.join(", ")));
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      return Promise.reject(new Error("Файл больше 5 МБ"));
+    }
+    var path = folder + "/" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
+
+    return refreshSession().then(function () {
+      if (!session) { throw new Error("Войди заново"); }
+      return fetch(SB_URL + "/storage/v1/object/files/" + path, {
+        method: "POST",
+        headers: {
+          "apikey": SB_KEY,
+          "Authorization": "Bearer " + session.access_token,
+          "Content-Type": file.type || "application/octet-stream"
+        },
+        body: file
+      });
+    }).then(function (r) {
+      if (!r.ok) { return r.text().then(function (t) { throw new Error(t); }); }
+      return path;
+    });
+  }
+
+  function deleteFile(path) {
+    if (!path) { return Promise.resolve(); }
+    return api("DELETE", "/storage/v1/object/files/" + path).catch(function () {});
+  }
+
+  // ---------- Домашние задания с картинкой ----------
+  function addHomework() {
+    var subject = document.getElementById("dz-subject").value;
+    var task = document.getElementById("dz-task").value.trim();
+    var due = document.getElementById("dz-date").value;
+    var file = document.getElementById("dz-file").files[0];
+
+    if (subject === "" || task === "") {
+      alert("Выбери предмет и впиши задание");
+      return;
+    }
+
+    var upload = file ? uploadFile(file, "homework", ["png", "jpg", "jpeg"]) : Promise.resolve(null);
+
+    upload.then(function (path) {
+      return api("POST", "/rest/v1/homework",
+        { subject: subject, task: task, due: due === "" ? null : due, done: false, image_path: path },
+        "return=minimal");
+    }).then(function () {
+      document.getElementById("dz-subject").value = "";
+      document.getElementById("dz-task").value = "";
+      document.getElementById("dz-date").value = "";
+      document.getElementById("dz-file").value = "";
+      loadHomework();
+    }).catch(function (e) { alert("Не получилось сохранить: " + e.message); });
+  }
+
+  function deleteHomework(id, path) {
+    if (!confirm("Удалить задание?")) { return; }
+    api("DELETE", "/rest/v1/homework?id=eq." + id)
+      .then(function () { return deleteFile(path); })
+      .then(loadHomework)
+      .catch(function (e) { alert("Не получилось: " + e.message); });
+  }
+
+  function makeDelete(id, path) { return function () { deleteHomework(id, path); }; }
+
+  function showHomework() {
+    var list = document.getElementById("dz-list");
+    list.innerHTML = "";
+    var logged = !!session;
+
+    for (var i = 0; i < homework.length; i++) {
+      var item = homework[i];
+
+      var li = document.createElement("li");
+      if (item.done) { li.className = "done"; }
+
+      if (logged) {
+        var box = document.createElement("input");
+        box.type = "checkbox";
+        box.checked = item.done;
+        box.onchange = makeToggle(item.id, item.done);
+        li.appendChild(box);
+      }
+
+      var text = document.createElement("span");
+      var line = item.subject + ": " + item.task;
+      if (item.due) { line = line + " (до " + formatDate(item.due) + ")"; }
+      text.textContent = line;
+      li.appendChild(text);
+
+      if (logged) {
+        var del = document.createElement("button");
+        del.textContent = "Удалить";
+        del.onclick = makeDelete(item.id, item.image_path);
+        li.appendChild(del);
+      }
+
+      if (item.image_path) {
+        var link = document.createElement("a");
+        link.href = fileUrl(item.image_path);
+        link.target = "_blank";
+        link.rel = "noopener";
+        var img = document.createElement("img");
+        img.className = "thumb";
+        img.src = fileUrl(item.image_path);
+        img.alt = "Картинка к заданию";
+        link.appendChild(img);
+        li.appendChild(link);
+      }
+
+      list.appendChild(li);
+    }
+  }
+
+  // ---------- Зачёты ----------
+  var exams = [];
+
+  function todayString() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+
+  function loadExams() {
+    api("GET", "/rest/v1/exams?select=*&order=day.asc")
+      .then(function (data) {
+        exams = data || [];
+        document.getElementById("ex-message").textContent = "";
+        showExams();
+      })
+      .catch(function () {
+        document.getElementById("ex-message").textContent =
+          "Не удалось загрузить зачёты. Проверь интернет (нужен VPN).";
+      });
+  }
+
+  function addExam() {
+    var subject = document.getElementById("ex-subject").value;
+    var day = document.getElementById("ex-date").value;
+    var req = document.getElementById("ex-req").value.trim();
+    var file = document.getElementById("ex-file").files[0];
+
+    if (subject === "" || day === "") {
+      alert("Выбери предмет и дату");
+      return;
+    }
+
+    var upload = file ? uploadFile(file, "exams", ["png", "jpg", "jpeg", "pdf", "doc", "docx"]) : Promise.resolve(null);
+
+    upload.then(function (path) {
+      return api("POST", "/rest/v1/exams",
+        { subject: subject, day: day, requirements: req, file_path: path, file_name: file ? file.name : null },
+        "return=minimal");
+    }).then(function () {
+      document.getElementById("ex-subject").value = "";
+      document.getElementById("ex-date").value = "";
+      document.getElementById("ex-req").value = "";
+      document.getElementById("ex-file").value = "";
+      loadExams();
+    }).catch(function (e) { alert("Не получилось сохранить: " + e.message); });
+  }
+
+  function deleteExam(id, path) {
+    if (!confirm("Удалить зачёт?")) { return; }
+    api("DELETE", "/rest/v1/exams?id=eq." + id)
+      .then(function () { return deleteFile(path); })
+      .then(loadExams)
+      .catch(function (e) { alert("Не получилось: " + e.message); });
+  }
+
+  function makeDeleteExam(id, path) { return function () { deleteExam(id, path); }; }
+
+  function showExams() {
+    var list = document.getElementById("ex-list");
+    list.innerHTML = "";
+    var today = todayString();
+
+    for (var i = 0; i < exams.length; i++) {
+      var ex = exams[i];
+      var li = document.createElement("li");
+      if (ex.day < today) { li.className = "past"; }
+
+      if (session) {
+        var del = document.createElement("button");
+        del.className = "del-btn";
+        del.textContent = "Удалить";
+        del.onclick = makeDeleteExam(ex.id, ex.file_path);
+        li.appendChild(del);
+      }
+
+      var title = document.createElement("b");
+      title.textContent = formatDate(ex.day) + " — " + ex.subject;
+      li.appendChild(title);
+
+      if (ex.requirements) {
+        var req = document.createElement("div");
+        req.className = "req";
+        req.textContent = ex.requirements;
+        li.appendChild(req);
+      }
+
+      if (ex.file_path) {
+        var a = document.createElement("a");
+        a.href = fileUrl(ex.file_path);
+        a.target = "_blank";
+        a.rel = "noopener";
+        a.textContent = "Билеты: " + (ex.file_name || "открыть файл");
+        li.appendChild(a);
+      }
+
+      list.appendChild(li);
+    }
+  }
+
+  // ---------- Полезные ссылки ----------
+  var linksData = [];
+
+  function loadLinks() {
+    api("GET", "/rest/v1/links?select=*&order=id.asc")
+      .then(function (data) {
+        linksData = data || [];
+        document.getElementById("link-message").textContent = "";
+        showLinks();
+      })
+      .catch(function () {
+        document.getElementById("link-message").textContent =
+          "Не удалось загрузить ссылки. Проверь интернет (нужен VPN).";
+      });
+  }
+
+  function addLink() {
+    var title = document.getElementById("link-title").value.trim();
     var url = document.getElementById("link-url").value.trim();
     var note = document.getElementById("link-note").value.trim();
 
@@ -107,3 +1298,6 @@ t.getElementById("link-title").value.trim();
     if (document.getElementById("links").style.display === "block") { loadLinks(); }
   }, 60000);
 </script>
+
+</body>
+</html>
