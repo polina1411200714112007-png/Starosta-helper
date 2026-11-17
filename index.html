@@ -361,8 +361,8 @@
       </select>
       <input id="dz-task" type="text" placeholder="Задание">
       <input id="dz-date" type="date">
-<label class="file-label">Картинка к заданию (png или jpg, до 5 МБ)</label>
-      <input id="dz-file" type="file" accept="image/png,image/jpeg">
+<label class="file-label">Файл к заданию (png, jpg, pdf, doc, docx, xls, xlsx, ppt, pptx, txt, до 5 МБ)</label>
+      <input id="dz-file" type="file" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
       <button onclick="addHomework()">Добавить</button>
     </div>
 <p class="note" id="hw-message"></p>
@@ -405,8 +405,8 @@
       </select>
       <input id="ex-date" type="date">
       <textarea id="ex-req" placeholder="Что нужно для зачёта"></textarea>
-      <label class="file-label">Файл с билетами (png, jpg, pdf, doc, docx, до 5 МБ)</label>
-      <input id="ex-file" type="file" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx">
+      <label class="file-label">Файл с билетами (png, jpg, pdf, doc, docx, xls, xlsx, ppt, pptx, txt, до 5 МБ)</label>
+      <input id="ex-file" type="file" accept=".png,.jpg,.jpeg,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
       <button onclick="addExam()">Добавить зачёт</button>
     </div>
 
@@ -999,11 +999,11 @@ if (имя === "dz") { loadHomework(); }
       return;
     }
 
-    var upload = file ? uploadFile(file, "homework", ["png", "jpg", "jpeg"]) : Promise.resolve(null);
+    var upload = file ? uploadFile(file, "homework", ["png", "jpg", "jpeg", "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt"]) : Promise.resolve(null);
 
     upload.then(function (path) {
       return api("POST", "/rest/v1/homework",
-        { subject: subject, task: task, due: due === "" ? null : due, done: false, image_path: path },
+        { subject: subject, task: task, due: due === "" ? null : due, done: false, image_path: path, file_name: file ? file.name : null },
         "return=minimal");
     }).then(function () {
       document.getElementById("dz-subject").value = "";
@@ -1057,18 +1057,24 @@ if (имя === "dz") { loadHomework(); }
       }
 
       if (item.image_path) {
+        var isImg = /\.(png|jpe?g)$/i.test(item.image_path);
         var link = document.createElement("a");
         link.href = fileUrl(item.image_path);
         link.target = "_blank";
         link.rel = "noopener";
-        var img = document.createElement("img");
-        img.className = "thumb";
-        img.src = fileUrl(item.image_path);
-        img.alt = "Картинка к заданию";
-        link.appendChild(img);
+        if (isImg) {
+          var img = document.createElement("img");
+          img.className = "thumb";
+          img.src = fileUrl(item.image_path);
+          img.alt = "Картинка к заданию";
+          link.appendChild(img);
+        } else {
+          link.textContent = "Файл: " + (item.file_name || "открыть");
+          link.style.display = "block";
+          link.style.marginTop = "8px";
+        }
         li.appendChild(link);
       }
-
       list.appendChild(li);
     }
   }
@@ -1105,7 +1111,7 @@ if (имя === "dz") { loadHomework(); }
       return;
     }
 
-    var upload = file ? uploadFile(file, "exams", ["png", "jpg", "jpeg", "pdf", "doc", "docx"]) : Promise.resolve(null);
+    var upload = file ? uploadFile(file, "exams",["png", "jpg", "jpeg", "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt"]) : Promise.resolve(null);
 
     upload.then(function (path) {
       return api("POST", "/rest/v1/exams",
